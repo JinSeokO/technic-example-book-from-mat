@@ -1,8 +1,53 @@
 <html lang="ko">
-    <head>
-        <title>Chat</title>
-    </head>
+<head>
+    <title>Chat</title>
+    <style>
+        input {
+            display: block;
+        }
+
+        ul {
+            list-style: none;
+        }
+    </style>
+</head>
     <body>
-        Let's chat (from template)
-    </body>
+    <h2>Let's chat (from template)</h2>
+    <ul id="messages"></ul>
+    <form id="chatbox">
+        <textarea></textarea>
+        <input type="submit" value="send"/>
+    </form>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+        $(function () {
+            var socket = null;
+            var msgBox = $("#chatbox textarea");
+            var messages = $("#messages");
+            $("#chatbox").submit(function () {
+                console.log("Test")
+                if (!msgBox.val()) return false;
+                if (!socket) {
+                    alert("오류: 소켓 연결이 없습니다");
+                    return false;
+                }
+
+                socket.send(msgBox.val());
+                msgBox.val("");
+                return false;
+            })
+            if (!window["WebSocket"]) {
+                alert("오류: 브라우저가 websocket을 지원하지 않습니다");
+            } else {
+                socket = new WebSocket("ws://localhost:8080/room")
+                socket.onclose = function () {
+                    alert("연결이 종료되었습니다");
+                }
+                socket.onmessage = function (e) {
+                    messages.append($("<li>").text(e.data));
+                }
+            }
+        })
+    </script>
+</body>
 </html>
